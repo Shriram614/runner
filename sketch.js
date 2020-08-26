@@ -1,340 +1,101 @@
-      //Global Variables
-      var backImage, banana, r,G,R,player_running;
-      var monkey,ground,GameOver,Restart,backGround,score;
-      var bananaGroup;
-      var obstacleGroup ;
-      var gameState;
-      var canvas;
+//Create variables here
+var dog, happyDog, database, foodS, foodStock,milk1;
+var feed,addFood;
+var feedTime,lastFed;
+var foodObj;
 
- function preload(){
+function preload()
+{
+  //load images here
+  Dog=loadImage("images/dog.png");
+  HappyDog=loadImage("images/dogimg.png");
+  milk1 =loadImage("Milk.png");
   
-  //loading backImage
-  backImage = loadImage("jungle.jpg");
-  
-
-  //setting Animation
-  player_running =loadAnimation("Monkey_01.png","Monkey_02.png","Monkey_03.png","Monkey_04.png","Monkey_05.png","Monkey_06.png","Monkey_07.png","Monkey_08.png","Monkey_09.png","Monkey_10.png");
-  
-  //setting bananaImage
-  bananaa =loadImage("Banana.png");
-  
-      //setting stoneImage
-      r=loadImage("stone.png");
-
-  //setting gameOver and Restart
-  G =loadImage("gameOver.png");
-  R =loadImage("restart.png");
 }
-
 
 function setup() {
-canvas = createCanvas(displayWidth-20,displayHeight-100);
-  
-      //creating backGround Sprite
-        backGround = createSprite(10,10,400,400);
-      backGround.addImage(backImage);
-      backGround.velocityX =-5;
+  createCanvas(displayWidth - 20, displayHeight-30);
+  database = firebase.database();
 
-  //creating monkey sprite
- 
-  monkey = createSprite(60,306,40,40);
-  monkey.addAnimation("running",player_running);
-  monkey .scale =0.1;
+ dog = createSprite(400,500,5,5);
+ dog.addImage(Dog);
+
+ foodObj = new Food();
+
+ feed=createButton("Feed The Dog");
+ feed.position(700,95);
+ feed.mousePressed('feedDog');
+
+ addFood=createButton("Feed The Dog");
+ addFood.position(700,95);
+ addFood.mousePressed('addFoods');
+
 
   
-  camera.position.x = displayWidth/2; 
-  camera.position.y = monkey.y
-
-  
-      //CREATING GROUND SPRITE
-      ground =createSprite(10,340,900,10);
-      ground.visible=false;
-
-        GameOver =createSprite(280,202,30,340);
-    GameOver.addImage(G);
-    GameOver.visible =false;
-  
-   Restart =createSprite(280,280,20,450);
-    Restart.addImage(R);
-    Restart.visible =false;
-  
-       //CREATING GROUP
-      bananaGroup = new Group();
-      obstacleGroup = new Group ();
-
-      //GIVING GAMESTATE
-      gameState="play";
-  
-  //MAKING SCORING SYSTEM
-  score =0;
+  foodStock = database.ref('Food');
+  foodStock.on("value",readStock);
 }
 
 
-function draw(){
+function draw() {  
 
-  
-  
-    //IF GAME STATE =PLAY THESE FOLLOWING FUNCTION SHOUL BE IN ACTION
-    if(gameState=="play") {
+background(46, 139, 87);
+foodObj.display();
 
-      if(keyDown("space") && monkey.y >= 305){
-        monkey.velocityY =-13;
-         }
+feedTime= database.ref('feedTime');
+feedTime.on("value",function(data){
+  lastFed= data.val();
+});
 
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-
-      if(bananaGroup.isTouching(monkey)) {
-
-        score=score+10
-          bananaGroup.destroyEach();
-      }
-
-        if(ground.x <-500) {
-        ground.x = ground.width/2;
-        }
-
-
-        if(backGround.x < 0) {
-        backGround.x = backGround.width/2;
-        }
-
-          monkey.collide(ground);
-      
-          if(obstacleGroup.isTouching(monkey)){  
-    monkey.scale =0.1;
-  }
-          
- switch (monkey.scale) {
-   case  0.1 :
-       if(obstacleGroup.isTouching(monkey)){
-        gameState="end";
-       }
-      
-  break;
-  default : break;
- }
-      
-      //Chaning gameState
-       
-    
-  //IF GAMESTATE = END THESE FOLLOWING FUNCTION SHOULD BE IN ACTION
-  if(gameState =="end") {
-   
-    
-    ground.velocityX = 0;
-  monkey.removed=true;
-  
-  
-     obstacleGroup.destroyEach();
-     bananaGroup.destroyEach();
-    
-    backGround.velocityX =0;
-    
-    GameOver.visible =true;
-    
-   Restart.visible =true;
-    
- 
-    if(keyDown("space")) {
-      reset();
-      }
-    
-  }
-  
-    //CALLING FOOD AND STONE FUNCTION
-   Food();
-    STONE();
-
- drawSprites();
-   
-  
-   stroke("red");
-    textSize(20);
-    fill("red");
-  text("target score = 100",200,20);
-  
-  
-    //COMPLETEING SCORING SYSTEM
-    stroke("yellow");
-    textSize(20);
-    fill("yellow");
-    text("score: "+ score,400,20);
-  
-  
-  
-  switch (score) {
-    
-  
-    case 10: monkey.scale=0.10;
-      console.log(monkey.y);
-      
-        if(keyDown("space") && monkey.y >= 274){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 20:monkey.scale=0.12;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 268){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 30:monkey.scale=0.14;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 40:monkey.scale=0.16;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 50:monkey.scale=0.18;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 60:monkey.scale=0.22;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 70:monkey.scale=0.22;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 80:monkey.scale=0.22;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      case 90:monkey.scale=0.22;
-      console.log(monkey.y);
-      
-       if(keyDown("space") && monkey.y >= 264){
-        monkey.velocityY =-20;
-         }
-
-    
-
-       monkey.velocityY = monkey.velocityY+0.5;
-      break;
-      
-      
-      case 100: text("you win",200,200);
-      
-    ground.velocityX = 0;
-  monkey.removed=true;
-  
-  
-     obstacleGroup.destroyEach();
-     bananaGroup.destroyEach();
-    
-    backGround.velocityX =0;
-  
-      
-    break;
-      default: break;
-  }
-
-}
+fill(255,255,254);
+textSize(15);
+if(lastFed>=12){
+  text("last Feed : " +lastFed%12+ "PM",350,30);
+} else if(lastFed==0) {
+  text("last Feed : 12 Am",350,30);
+} else{
+  text("last Feed : "+lastFed+"AM",350,30);
 }
 
-function reset() {
+  drawSprites();
+  //add styles here
   
-  gameState="play";
-  backGround.velocityX =-5;
-  monkey.removed=false;
-  GameOver.visible =false
-  Restart.visible =false
-  score=0;
-  monkey.scale=0.1;
-}
- 
 
-  //MAKING FOOD FUNCTION
-function Food() {
-
-  if(frameCount % 140==0){
-    
-    var banana =createSprite(620,200,40,40);
-    banana.scale =0.06;
-    banana.addImage(bananaa);
-    banana.y =Math.round(random(120,200));
-
-    banana.velocityX =-5;
-    banana.lifetime = 155;
-    bananaGroup.add(banana);
-    
-}
+stroke(255);
+textSize(40);
+fill("yellow");
+text("food: " + foodS,200,200);
 }
 
-    //MAKING STONE FUNCTION
-    function STONE() {
+function feedDog(){
+dog.addImage(HappyDog);
 
-      if(frameCount % 300 ==0){
+foodObj.updateFoodStock(foodObj.getFoodStock()-1);
+database.ref('/').update({
+ Food: foodObj.getFoodStock(),
+ feedTime:hour()
+})
+}
 
-      var stone =createSprite(620,306,40,40);
-      stone.addImage(r);
-      stone.scale =0.1;
+function addFoods(){
+  foodS++;
+  database.ref('/').update({
+    Food:foodS
+  })
+}
 
-      stone.velocityX =-5;
-      stone.lifetime =155;
-        obstacleGroup.add(stone);
-      }
-    }
+function readStock(data){
+  foodS = data.val();
+}
+
+function writeStock(x){
+
+if(x<=0){
+  x=0;
+}else{
+  x=x-1;
+}
+  database.ref('/').update({
+    'Food':x
+  })
+}
